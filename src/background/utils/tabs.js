@@ -128,7 +128,7 @@ addPublicCommands({
     }
     if (isInternal
         && url.startsWith(EDITOR_ROUTE)
-        && browserWindows
+        && browserWindows?.create
         && getOption('editorWindow')) {
       const wndOpts = {
         url,
@@ -173,7 +173,7 @@ addPublicCommands({
       }
     }
     if (active && newTab[kWindowId] !== windowId) {
-      await browserWindows?.update(newTab[kWindowId], { focused: true });
+      await browserWindows?.update?.(newTab[kWindowId], { focused: true });
     }
     if (!isInternal && srcTab.id != null) {
       tabOpeners[newTab.id] = srcTab.id;
@@ -188,7 +188,7 @@ addPublicCommands({
   },
   TabFocus(_, src) {
     browser.tabs.update(src.tab.id, { active: true }).catch(noop);
-    browserWindows?.update(src.tab[kWindowId], { focused: true }).catch(noop);
+    browserWindows?.update?.(src.tab[kWindowId], { focused: true }).catch(noop);
   },
 });
 
@@ -204,9 +204,10 @@ tabsOnRemoved.addListener(async (id) => {
 
 (async () => {
   // FF68+ can't fetch file:// from extension context but it runs content scripts in file:// tabs
-  const fileScheme = IS_FIREFOX
-    || await new Promise(r => chrome.extension.isAllowedFileSchemeAccess(r));
-  fileSchemeRequestable = !IS_FIREFOX && fileScheme;
+  const fileScheme = !__.SAFARI && (
+    IS_FIREFOX || await new Promise(r => chrome.extension.isAllowedFileSchemeAccess(r))
+  );
+  fileSchemeRequestable = !IS_FIREFOX && !__.SAFARI && fileScheme;
   // Since users in FF can override UA we detect FF 90 via feature
   if (IS_FIREFOX && [].at || CHROME >= 88) {
     injectableRe = fileScheme ? /^(https?|file):/ : /^https?:/;
@@ -239,7 +240,7 @@ export async function openDashboard(route, src) {
     const tabUrl = tab.url;
     // query() can't handle #hash so it returns tabs both with #hash and without it
     if (tabUrl === url || !route && tabUrl === url + ROUTE_SCRIPTS) {
-      browserWindows?.update(tab[kWindowId], { focused: true });
+      browserWindows?.update?.(tab[kWindowId], { focused: true });
       return browser.tabs.update(tab.id, { active: true });
     }
   }

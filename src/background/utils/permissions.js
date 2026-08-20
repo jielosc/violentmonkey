@@ -8,8 +8,10 @@ export let permissionDownloads;
 export const onPermissionChanged = new Set();
 const browserPermissions = browser.permissions;
 const { onAdded, onRemoved } = browserPermissions;
-initDependency(browserPermissions.contains({ permissions: [kDownloads] })
-    .then(onDownloadsToggled));
+initDependency((browser.downloads
+  ? browserPermissions.contains({ permissions: [kDownloads] }).catch(() => false)
+  : Promise.resolve(false)
+).then(onDownloadsToggled));
 
 if (!__.MV3 && !onAdded) {
   addOwnCommands({

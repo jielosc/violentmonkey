@@ -31,8 +31,11 @@ export let lastRegDuration = 0;
 export let lastRegTime = 0;
 let xhrInjectKey;
 
-const API_HEADERS_RECEIVED = browser.webRequest.onHeadersReceived;
-const API_XHR = __.MV3 ? browser.webRequest.onBeforeRequest : API_HEADERS_RECEIVED;
+const NOOP_EVENT = { addListener: noop, removeListener: noop };
+const webRequest = browser.webRequest;
+const API_HEADERS_RECEIVED = webRequest?.onHeadersReceived || NOOP_EVENT;
+const API_SEND_HEADERS = webRequest?.onSendHeaders || NOOP_EVENT;
+const API_XHR = __.MV3 ? webRequest?.onBeforeRequest || NOOP_EVENT : API_HEADERS_RECEIVED;
 export const makeXhrHeader = (key, blobUrl) => ({
   [key]: kSetCookie,
   value: `${xhrInjectKey}=${blobUrl.split('/').pop()}; SameSite=Lax`,
@@ -41,10 +44,10 @@ const API_CONFIG = {
   urls: [GLOB_ALL], // `*` scheme matches only http and https
   types: [kMainFrame, kSubFrame],
 };
-const API_EXTRA = [
+const API_EXTRA = __.SAFARI ? [] : [
   !__.MV3 && 'blocking', // used for xhrInject and to make Firefox fire the event before GetInjected
   kResponseHeaders,
-  browser.webRequest.OnHeadersReceivedOptions.EXTRA_HEADERS,
+  webRequest?.OnHeadersReceivedOptions.EXTRA_HEADERS,
 ].filter(Boolean);
 const findCspHeader = h => h.name.toLowerCase() === 'content-security-policy';
 const CSP_RE = /(?:^|[;,])\s*(?:script-src(-elem)?|(d)efault-src)(\s+[^;,]+)/g;
@@ -139,6 +142,7 @@ function onOptionChanged(changes) {
 }
 
 function toggleXhrInject(enable) {
+  if (__.SAFARI) enable = false;
   if (enable) enable = injectInto !== CONTENT;
   if (xhrInject === enable) return;
   xhrInject = enable;
@@ -158,13 +162,13 @@ function togglePreinject(enable) {
   // And even in Chrome a site may be so fast that preinject on onHeadersReceived won't be useful.
   const onOff = `${enable ? 'add' : 'remove'}Listener`;
   const config = enable ? API_CONFIG : undefined;
-  browser.webRequest.onSendHeaders[onOff](onSendHeaders, config);
+  API_SEND_HEADERS[onOff](onSendHeaders, config);
   if (!isApplied /* remove the listener */
   || IS_FIREFOX && !xhrInject && injectInto !== CONTENT /* add 'nonce' detector */) {
     API_HEADERS_RECEIVED[onOff](onHeadersReceived, config, config && API_EXTRA);
   }
   tabsOnRemoved[onOff](onTabRemoved);
-  browser.tabs.onReplaced[onOff](onTabReplaced);
+  browser.tabs.onReplaced?.[onOff](onTabReplaced);
   if (!enable) {
     cache.destroy();
     clearFrameData();

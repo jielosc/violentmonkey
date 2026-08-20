@@ -9,7 +9,7 @@
           }} <ruby v-text="i18n('labelScriptOptionRequired')"/></span>
         </setting-check>
       </tooltip>
-      <tooltip :content="i18n('labelGmDownloadViaApiHint')">
+      <tooltip v-if="CAN_DOWNLOAD" :content="i18n('labelGmDownloadViaApiHint')">
         <setting-check
           :name="kGmDownloadViaApi" :label="i18n('labelGmDownloadViaApi')" ref="$dlApi"
           :data-needs-grant="!store[kDownloads] && $dlApi?.value && !granting ? 1 : 0" />
@@ -71,7 +71,7 @@
             <a class="ml-1" :href="VM_DOCS_INJECT_INTO" v-bind="EXTERNAL_LINK_PROPS" v-text="i18n('learnInjectionMode')"/>
           </label>
           <tooltip :content="i18n('labelXhrInjectHint')" align="start">
-            <setting-check name="xhrInject">
+            <setting-check name="xhrInject" :disabled="!CAN_XHR_INJECT">
               <span v-text="i18n('labelXhrInject', '<page>')"/>
               <ruby v-text="i18n('labelXhrInjectNote')" class="ml-1"/>
             </setting-check>
@@ -93,7 +93,8 @@
             </setting-check>
           </locale-group>
         </div>
-        <setting-check name="helpForLocalFile" :label="i18n('helpForLocalFile')"/>
+        <setting-check name="helpForLocalFile" :label="i18n('helpForLocalFile')"
+                       :disabled="!CAN_LOCAL_FILE"/>
       </section>
 
       <vm-editor />
@@ -147,6 +148,9 @@ const items = {
 };
 const ctrlS = () => getActiveElement().dispatchEvent(new Event('ctrl-s'));
 const CAN_FAST_INJECT = __.MV3 || browser.contentScripts;
+const CAN_DOWNLOAD = !!browser.downloads;
+const CAN_LOCAL_FILE = !__.SAFARI;
+const CAN_XHR_INJECT = !__.SAFARI;
 </script>
 
 <script setup>
@@ -182,8 +186,8 @@ onActivated(() => {
   ];
   expose.value = Object.keys(options.get(EXPOSE)).map(k => [k, decodeURIComponent(k)]);
   // TODO: find out why using @click on <setting-check> fires twice
-  dlApiInput = $dlApi.value.$input;
-  dlApiInput.onclick = requestDownloadsPermission;
+  dlApiInput = $dlApi.value?.$input;
+  if (dlApiInput) dlApiInput.onclick = requestDownloadsPermission;
 });
 onDeactivated(() => {
   revokers.forEach(r => r());

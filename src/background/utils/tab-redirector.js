@@ -47,7 +47,7 @@ async function confirmInstall({ code, from, url, fs, parsed }, { tab = {} }) {
   && await browser.tabs.update(tabId, { url: confirmUrl }).catch(noop)
   || await commands.TabOpen({ url: confirmUrl, active: !!active }, { tab });
   if (active && windowId !== tab[kWindowId]) {
-    await browserWindows?.update(windowId, { focused: true });
+    await browserWindows?.update?.(windowId, { focused: true });
   }
 }
 
@@ -120,14 +120,14 @@ tabsOnUpdated.addListener(async (tabId, { url }, tab) => {
   }
 }, !__.MV3 && FIREFOX && { properties: [FIREFOX >= 88 ? 'url' : 'status'] });
 
-browser.webRequest.onBeforeRequest.addListener((req) => {
+browser.webRequest?.onBeforeRequest.addListener((req) => {
   const { method, tabId, url } = req;
   if (method !== 'GET') {
     return;
   }
   // open a real URL for simplified userscript URL listed in devtools of the web page
   if (!__.MV3 && url.startsWith(extensionRoot)) {
-    return { redirectUrl: resolveVirtualUrl(url) };
+    if (!__.SAFARI) return { redirectUrl: resolveVirtualUrl(url) };
   }
   let isWhitelisted;
   if (!cache.has(`bypass:${url}`) && (
@@ -136,7 +136,7 @@ browser.webRequest.onBeforeRequest.addListener((req) => {
     || !isRemote(url)
   )) {
     maybeInstallUserJs(tabId, url, isWhitelisted);
-    return IS_FIREFOX
+    return __.SAFARI ? undefined : IS_FIREFOX
       ? { cancel: true } // for sites with strict CSP in FF
       : { redirectUrl: 'javascript:void 0' }; // eslint-disable-line no-script-url
   }
@@ -152,4 +152,4 @@ browser.webRequest.onBeforeRequest.addListener((req) => {
     !__.MV3 && `${extensionRoot}*.user.js`,
   ].filter(Boolean),
   types: [kMainFrame],
-}, __.MV3 ? [] : ['blocking']);
+}, __.MV3 || __.SAFARI ? undefined : ['blocking']);

@@ -2,8 +2,13 @@ const childProcess = require('child_process');
 const path = require('path');
 
 const isProd = process.env.NODE_ENV === 'production';
+const TARGET = process.env.TARGET || '';
+const SAFARI = TARGET === 'safari';
+if (SAFARI && process.env.MV3 === '1') {
+  throw new Error('TARGET=safari and MV3=1 are mutually exclusive');
+}
 const MV3 = process.env.MV3 === '1';
-const DIST = MV3 ? 'dist-mv3' : 'dist';
+const DIST = SAFARI ? 'dist-safari' : MV3 ? 'dist-mv3' : 'dist';
 
 function exec(cmd, args = []) {
   try {
@@ -23,3 +28,5 @@ exports.extensions = [
 exports.exec = exec;
 exports.DIST = DIST;
 exports.MV3 = MV3;
+exports.SAFARI = SAFARI;
+exports.TARGET = TARGET;
