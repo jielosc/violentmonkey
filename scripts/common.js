@@ -3,7 +3,10 @@ const path = require('path');
 
 const isProd = process.env.NODE_ENV === 'production';
 const MV3 = process.env.MV3 === '1';
-const DIST = MV3 ? 'dist-mv3' : 'dist';
+const TARGET = process.env.TARGET || '';
+const SAFARI = TARGET === 'safari' || TARGET === 'safari-ios';
+const SAFARI_IOS = TARGET === 'safari-ios';
+const DIST = SAFARI_IOS ? 'dist-safari-ios' : SAFARI ? 'dist-safari' : MV3 ? 'dist-mv3' : 'dist';
 
 function exec(cmd, args = []) {
   try {
@@ -23,3 +26,6 @@ exports.extensions = [
 exports.exec = exec;
 exports.DIST = DIST;
 exports.MV3 = MV3;
+exports.SAFARI = SAFARI;
+exports.SAFARI_IOS = SAFARI_IOS;
+exports.TARGET = TARGET;

@@ -1,4 +1,5 @@
 /dist*/
+/build/safari-*/
 node_modules/
 *.log
 .eslintcache

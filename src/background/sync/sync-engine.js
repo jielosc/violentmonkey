@@ -256,7 +256,25 @@ export function openAuthPage(url, redirectUri) {
     authResolve = null;
     resolvePromise(null);
   }, 300_000);
+  redirectUri = redirectUri.replace(/:\d+/, '');
   browser.tabs.create({ url }).then(({ id: tabId }) => {
+    if (__.SAFARI) {
+      const handler = (id, { url: nextUrl }) => {
+        if (id === tabId && nextUrl?.startsWith(redirectUri)) finish(nextUrl);
+      };
+      const finish = (result) => {
+        browser.tabs.remove(tabId);
+        setTimeout(unregister, 0);
+        if (authResolve) {
+          clearTimeout(authTimer);
+          authResolve(result);
+          authResolve = null;
+        }
+      };
+      unregister = () => browser.tabs.onUpdated.removeListener(handler);
+      browser.tabs.onUpdated.addListener(handler);
+      return;
+    }
     const handler = (info) => {
       browser.tabs.remove(tabId);
       setTimeout(unregister, 0);
@@ -270,7 +288,6 @@ export function openAuthPage(url, redirectUri) {
     unregister = () => {
       browser.webRequest.onBeforeRequest.removeListener(handler);
     };
-    redirectUri = redirectUri.replace(/:\d+/, '');
     browser.webRequest.onBeforeRequest.addListener(
       handler,
       {

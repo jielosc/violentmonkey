@@ -39,9 +39,10 @@ const API_FILTER = {
   urls: ['<all_urls>'],
   types: ['xmlhttprequest'],
 };
-const EXTRA_HEADERS = [
+const webRequest = browser.webRequest;
+const EXTRA_HEADERS = __.SAFARI ? [] : [
   !__.MV3 && 'blocking',
-  browser.webRequest.OnBeforeSendHeadersOptions.EXTRA_HEADERS,
+  webRequest?.OnBeforeSendHeadersOptions.EXTRA_HEADERS,
 ].filter(Boolean);
 const headersToInject = {};
 export const kCookie = 'cookie';
@@ -69,11 +70,11 @@ function onHeadersReceived({ [kResponseHeaders]: headers, requestId, tabId, url 
   const req = requests[verify[requestId]];
   if (req) {
     // Populate responseHeaders for GM_xhr's `response`
-    req[kResponseHeaders] = headers.map(encodeWebRequestHeader).join('');
+    if (headers) req[kResponseHeaders] = headers.map(encodeWebRequestHeader).join('');
     if (__.MV3) return;
     const { storeId } = req;
     // Drop Set-Cookie headers if anonymous or using a custom storeId
-    if (!req[kSetCookie] || storeId) {
+    if (headers && !__.SAFARI && (!req[kSetCookie] || storeId)) {
       headers = headers.filter(h => {
         if (h.name.toLowerCase() !== kSetCookie) return true;
         if (storeId) setCookieInStore(h.value, storeId, url);
@@ -84,7 +85,7 @@ function onHeadersReceived({ [kResponseHeaders]: headers, requestId, tabId, url 
 }
 
 /** @param {chrome.webRequest.WebRequestDetails} details */
-function onBeforeSendHeaders({ [kRequestHeaders]: headers, requestId, tabId, url }) {
+function onBeforeSendHeaders({ [kRequestHeaders]: headers = [], requestId, tabId, url }) {
   if (CHROME_REG_LEAK_BUG && tabId !== -1) return;
   let req;
   let reqId = verify[requestId];
@@ -118,17 +119,18 @@ function onBeforeSendHeaders({ [kRequestHeaders]: headers, requestId, tabId, url
         headersMap[name] = h;
       }
     }
-    return {
+    return !__.SAFARI && {
       [kRequestHeaders]: Object.values(Object.assign(headersMap, headers2, combinedHeaders))
     };
   }
 }
 
 export function toggleHeaderInjector(reqId, headers) {
+  if (!webRequest) return;
   if (headers) {
     if (isEmpty(headersToInject)) {
       API_EVENTS::forEachEntry(([name, [listener, ...options]]) => {
-        browser.webRequest[name].addListener(listener, API_FILTER, options);
+        webRequest[name].addListener(listener, API_FILTER, options);
       });
     }
     // Adding even if empty so that the toggle-off `if` runs just once even when called many times
@@ -137,7 +139,7 @@ export function toggleHeaderInjector(reqId, headers) {
     delete headersToInject[reqId];
     if (!CHROME_REG_LEAK_BUG && isEmpty(headersToInject)) {
       API_EVENTS::forEachEntry(([name, [listener]]) => {
-        browser.webRequest[name].removeListener(listener);
+        webRequest[name].removeListener(listener);
       });
     }
   }
@@ -200,7 +202,7 @@ function string2byteString(str) {
 // Chrome 74-91 needs an extraHeaders listener at tab load start, https://crbug.com/1074282
 // We're attaching a no-op in non-blocking mode so it's very lightweight and fast.
 if (!__.MV3 && CHROME >= 74 && CHROME <= 91) {
-  browser.webRequest.onBeforeSendHeaders.addListener(noop, API_FILTER, EXTRA_HEADERS);
+  webRequest.onBeforeSendHeaders.addListener(noop, API_FILTER, EXTRA_HEADERS);
 }
 // Attaching globally will see all XHRs in all tabs because tabId:-1 in addListener is ignored
 if (CHROME_REG_LEAK_BUG) toggleHeaderInjector('', []);

@@ -1,10 +1,13 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const { getVersion, isBeta } = require('./version-helper');
-const { MV3, isProd } = require('./common');
+const { MV3, SAFARI, SAFARI_IOS, isProd } = require('./common');
+
+const SAFARI_MIN_VERSION = '15.4';
 
 function getBrowserTargets() {
   const manifest = readManifest();
+  if (SAFARI) return `Safari >= ${SAFARI_MIN_VERSION}`;
   const CH = parseInt(manifest.minimum_chrome_version);
   const FF = parseInt(manifest.browser_specific_settings?.gecko.strict_min_version);
   return [
@@ -36,6 +39,20 @@ function readManifest() {
       'webNavigation',
     ].filter(Boolean)),
   });
+  if (SAFARI) {
+    delete data.minimum_chrome_version;
+    delete data.browser_action.browser_style;
+    data.browser_specific_settings = {
+      safari: {
+        strict_min_version: SAFARI_MIN_VERSION,
+      },
+    };
+    data.background.persistent = !SAFARI_IOS;
+    data.permissions = data.permissions.filter(permission => (
+      permission !== 'webRequestBlocking'
+      && (!SAFARI_IOS || permission !== 'webRequest' && permission !== 'contextMenus')
+    ));
+  }
   return data;
 }
 
@@ -99,3 +116,4 @@ exports.readManifest = readManifest;
 exports.buildManifest = buildManifest;
 exports.buildUpdatesList = buildUpdatesList;
 exports.ListBackgroundScriptsPlugin = ListBackgroundScriptsPlugin;
+exports.SAFARI_MIN_VERSION = SAFARI_MIN_VERSION;

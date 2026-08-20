@@ -6,6 +6,7 @@ import { vetUrl } from './url';
 const kZombie = 'zombie';
 const kZombieTimeout = 'zombieTimeout';
 const kZombieUrl = 'zombieUrl';
+const notificationsApi = browser.notifications;
 
 addPublicCommands({
   /** @return {Promise<string>} */
@@ -19,8 +20,9 @@ addPublicCommands({
     [kZombieUrl]: zombieUrl,
     [kZombieTimeout]: zombieTimeout,
   }, src) {
+    if (!notificationsApi) return '';
     if (tag) clearZombieTimer(notifications[tag]);
-    const notificationId = await browser.notifications.create(tag, {
+    const notificationId = await notificationsApi.create(tag, {
       type: 'basic',
       title: [title, IS_FIREFOX && i18n('extName')]::trueJoin(' - '), // Chrome already shows the name
       message: text,
@@ -50,9 +52,9 @@ addPublicCommands({
   },
 });
 
-browser.notifications.onClicked.addListener((id) => notifyOpener(id, true));
+notificationsApi?.onClicked.addListener((id) => notifyOpener(id, true));
 
-browser.notifications.onClosed.addListener((id) => notifyOpener(id, false));
+notificationsApi?.onClosed.addListener((id) => notifyOpener(id, false));
 
 async function notifyOpener(id, isClick) {
   if (init) await sessionData;
@@ -107,5 +109,5 @@ export function removeNotification(nid) {
   if (!notifications[nid]) return;
   delete notifications[nid];
   if (__.MV3) flushSession(kNotifications, notifications);
-  return browser.notifications.clear(nid);
+  return notificationsApi?.clear(nid);
 }
