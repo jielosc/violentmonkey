@@ -16,7 +16,9 @@ import { forEachTab, tabsOnActivated, tabsOnRemoved } from './tabs';
  */
 
 /** Promisified explicitly on demand because it returns an id in Firefox and not a Promise */
-export const contextMenus = browser.contextMenus;
+export const contextMenus = __.SAFARI
+  ? browser.contextMenus || chrome.contextMenus
+  : chrome.contextMenus;
 export const CMD_PREFIX = 'cmd:';
 const ROOT_ID = 'cmdRoot';
 const MAX_TITLE_LEN = 250;

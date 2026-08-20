@@ -465,6 +465,7 @@ declare var __: {
   /** An extension context with full access to chrome API i.e. not offscreen, content */
   EXT: boolean,
   MV3: boolean;
+  SAFARI: boolean;
   INIT_FUNC_NAME: string;
   INJECTED: string | false;
   SW: boolean;

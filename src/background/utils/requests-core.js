@@ -119,9 +119,11 @@ function onBeforeSendHeaders({ [kRequestHeaders]: headers = [], requestId, tabId
         headersMap[name] = h;
       }
     }
-    return !__.SAFARI && {
-      [kRequestHeaders]: Object.values(Object.assign(headersMap, headers2, combinedHeaders))
-    };
+    if (!__.SAFARI) {
+      return {
+        [kRequestHeaders]: Object.values(Object.assign(headersMap, headers2, combinedHeaders))
+      };
+    }
   }
 }
 

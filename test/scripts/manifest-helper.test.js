@@ -20,8 +20,20 @@ test('builds a Safari macOS manifest', () => {
   expect(manifest.background.persistent).toBe(true);
   expect(manifest.permissions).toContain('webRequest');
   expect(manifest.permissions).not.toContain('webRequestBlocking');
+  expect(manifest.permissions).not.toContain('notifications');
+  expect(manifest.optional_permissions).toBeUndefined();
   expect(manifest.commands._execute_browser_action).toBeUndefined();
   expect(manifest.browser_action.browser_style).toBeUndefined();
+  expect(manifest.options_ui.open_in_tab).toBeUndefined();
+});
+
+test('rejects a mixed Safari and MV3 target', () => {
+  process.env.TARGET = 'safari';
+  process.env.MV3 = '1';
+  jest.resetModules();
+
+  expect(() => require('@/../scripts/manifest-helper'))
+  .toThrow('TARGET=safari and MV3=1 are mutually exclusive');
 });
 
 function loadFor(target) {

@@ -127,7 +127,7 @@ browser.webRequest?.onBeforeRequest.addListener((req) => {
   }
   // open a real URL for simplified userscript URL listed in devtools of the web page
   if (!__.MV3 && url.startsWith(extensionRoot)) {
-    return !__.SAFARI && { redirectUrl: resolveVirtualUrl(url) };
+    if (!__.SAFARI) return { redirectUrl: resolveVirtualUrl(url) };
   }
   let isWhitelisted;
   if (!cache.has(`bypass:${url}`) && (

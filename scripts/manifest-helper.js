@@ -42,6 +42,7 @@ function readManifest() {
   if (SAFARI) {
     delete data.minimum_chrome_version;
     delete data.browser_action.browser_style;
+    delete data.options_ui.open_in_tab;
     // Safari reports an empty/invalid command for Chromium's reserved action
     // shortcut, while the toolbar action remains available normally.
     delete data.commands._execute_browser_action;
@@ -51,7 +52,13 @@ function readManifest() {
       },
     };
     data.background.persistent = true;
-    data.permissions = data.permissions.filter(permission => permission !== 'webRequestBlocking');
+    data.permissions = data.permissions.filter(permission => (
+      permission !== 'webRequestBlocking' && permission !== 'notifications'
+    ));
+    data.optional_permissions = data.optional_permissions.filter(permission => (
+      permission !== 'downloads'
+    ));
+    if (!data.optional_permissions.length) delete data.optional_permissions;
   }
   return data;
 }

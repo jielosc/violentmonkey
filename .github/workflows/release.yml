@@ -78,19 +78,6 @@ jobs:
           BETA=1 MV3=1 npx gulp manifest
           cd dist-mv3 && zip -r ../$TEMP_DIR/$ASSET_CWS_BETA_ZIP . && cd ..
 
-      - name: Build Safari
-        env:
-          SYNC_DROPBOX_CLIENT_ID: ${{ secrets.SYNC_DROPBOX_CLIENT_ID }}
-          SYNC_GOOGLE_DESKTOP_ID: ${{ secrets.SYNC_GOOGLE_DESKTOP_ID }}
-          SYNC_GOOGLE_DESKTOP_SECRET: ${{ secrets.SYNC_GOOGLE_DESKTOP_SECRET }}
-          SYNC_ONEDRIVE_CLIENT_ID: ${{ secrets.SYNC_ONEDRIVE_CLIENT_ID }}
-        run: |
-          pnpm build:safari
-
-      - name: Zip Safari
-        run: |
-          cd dist-safari && zip -r ../$ASSETS_DIR/$ASSET_SAFARI_ZIP . && cd ..
-
       - name: Publish to AMO
         continue-on-error: true
         run: |
