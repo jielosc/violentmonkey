@@ -36,6 +36,7 @@ import {
   OAuth2Authorizers,
 } from '@usync/oauth2';
 import { DriveProviders } from '@usync/drive';
+import { getWebRequestRedirectPrefix, isAuthRedirect } from './oauth';
 
 // --- Module-level state ---
 
@@ -256,11 +257,11 @@ export function openAuthPage(url, redirectUri) {
     authResolve = null;
     resolvePromise(null);
   }, 300_000);
-  redirectUri = redirectUri.replace(/:\d+/, '');
+  const webRequestRedirectPrefix = getWebRequestRedirectPrefix(redirectUri);
   browser.tabs.create({ url }).then(({ id: tabId }) => {
     if (__.SAFARI) {
       const handler = (id, { url: nextUrl }) => {
-        if (id === tabId && nextUrl?.startsWith(redirectUri)) finish(nextUrl);
+        if (id === tabId && isAuthRedirect(nextUrl, redirectUri)) finish(nextUrl);
       };
       const finish = (result) => {
         browser.tabs.remove(tabId);
@@ -291,7 +292,7 @@ export function openAuthPage(url, redirectUri) {
     browser.webRequest.onBeforeRequest.addListener(
       handler,
       {
-        urls: [`${redirectUri}*`],
+        urls: [`${webRequestRedirectPrefix}*`],
         types: [kMainFrame, 'xmlhttprequest'],
       },
       ['blocking'],
