@@ -38,7 +38,6 @@ jobs:
           pnpm exec run-p ci build
           pnpm build:mv3
           pnpm build:safari
-          pnpm build:safari:ios
         env:
           SYNC_DROPBOX_CLIENT_ID: ${{ secrets.SYNC_DROPBOX_CLIENT_ID }}
           SYNC_GOOGLE_DESKTOP_ID: ${{ secrets.SYNC_GOOGLE_DESKTOP_ID }}
@@ -68,14 +67,6 @@ jobs:
         with:
           name: 'Violentmonkey-test-safari-macos-${{ env.GIT_DESCRIBE }}'
           path: 'dist-safari/*'
-          if-no-files-found: error
-
-      - name: Upload Safari iOS zip
-        uses: actions/upload-artifact@v7
-        continue-on-error: true
-        with:
-          name: 'Violentmonkey-test-safari-ios-${{ env.GIT_DESCRIBE }}'
-          path: 'dist-safari-ios/*'
           if-no-files-found: error
 
       - name: Upload to Transifex - check src

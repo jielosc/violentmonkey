@@ -24,16 +24,6 @@ test('builds a Safari macOS manifest', () => {
   expect(manifest.browser_action.browser_style).toBeUndefined();
 });
 
-test('builds a Safari iOS manifest without unsupported persistent APIs', () => {
-  const { readManifest } = loadFor('safari-ios');
-  const manifest = readManifest();
-
-  expect(manifest.background.persistent).toBe(false);
-  expect(manifest.permissions).not.toContain('webRequest');
-  expect(manifest.permissions).not.toContain('webRequestBlocking');
-  expect(manifest.permissions).not.toContain('contextMenus');
-});
-
 function loadFor(target) {
   process.env.TARGET = target;
   delete process.env.MV3;

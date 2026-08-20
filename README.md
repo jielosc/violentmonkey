@@ -57,11 +57,10 @@ $ pnpm build:selfHosted
 
 ### Safari
 
-Dedicated Safari Web Extension builds are available for macOS and iOS/iPadOS:
+Dedicated Safari Web Extension builds are available for macOS:
 
 ``` sh
 $ pnpm build:safari
-$ pnpm build:safari:ios
 ```
 
 See [SAFARI.md](SAFARI.md) for temporary installation, Xcode packaging, platform-specific behavior,

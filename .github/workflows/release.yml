@@ -86,12 +86,10 @@ jobs:
           SYNC_ONEDRIVE_CLIENT_ID: ${{ secrets.SYNC_ONEDRIVE_CLIENT_ID }}
         run: |
           pnpm build:safari
-          pnpm build:safari:ios
 
       - name: Zip Safari
         run: |
           cd dist-safari && zip -r ../$ASSETS_DIR/$ASSET_SAFARI_ZIP . && cd ..
-          cd dist-safari-ios && zip -r ../$ASSETS_DIR/$ASSET_SAFARI_IOS_ZIP . && cd ..
 
       - name: Publish to AMO
         continue-on-error: true

@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const { ListBackgroundScriptsPlugin } = require('./manifest-helper');
 const { addWrapperWithGlobals, getCodeMirrorThemes } = require('./webpack-util');
 const { getVersion } = require('./version-helper');
-const { MV3, SAFARI, SAFARI_IOS } = require('./common');
+const { MV3, SAFARI } = require('./common');
 const { configLoader } = require('./config-helper');
 const { getBaseConfig, getPageConfig, isProd } = require('./webpack-base');
 
@@ -50,7 +50,6 @@ const defsObj = {
     INIT_FUNC_NAME,
     MV3,
     SAFARI,
-    SAFARI_IOS,
     CODEMIRROR_THEMES: getCodeMirrorThemes(),
     DEBUG: +process.env.DEBUG,
     DEV: !isProd,

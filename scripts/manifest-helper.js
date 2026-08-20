@@ -1,7 +1,7 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const { getVersion, isBeta } = require('./version-helper');
-const { MV3, SAFARI, SAFARI_IOS, isProd } = require('./common');
+const { MV3, SAFARI, isProd } = require('./common');
 
 const SAFARI_MIN_VERSION = '15.4';
 
@@ -50,11 +50,8 @@ function readManifest() {
         strict_min_version: SAFARI_MIN_VERSION,
       },
     };
-    data.background.persistent = !SAFARI_IOS;
-    data.permissions = data.permissions.filter(permission => (
-      permission !== 'webRequestBlocking'
-      && (!SAFARI_IOS || permission !== 'webRequest' && permission !== 'contextMenus')
-    ));
+    data.background.persistent = true;
+    data.permissions = data.permissions.filter(permission => permission !== 'webRequestBlocking');
   }
   return data;
 }

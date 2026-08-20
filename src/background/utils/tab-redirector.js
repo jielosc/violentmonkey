@@ -107,12 +107,6 @@ tabsOnUpdated.addListener(async (tabId, { url }, tab) => {
   if (isUserJS && !isFile) {
     cache.put(`autoclose:${id}`, true, 10e3);
   }
-  if (__.SAFARI_IOS && isUserJS && !isFile && !cache.has(`bypass:${url}`)) {
-    const isWhitelisted = whitelistRe.test(url);
-    if (isWhitelisted || !blacklistRe.test(url) || !isRemote(url)) {
-      maybeInstallUserJs(tabId, url, isWhitelisted);
-    }
-  }
   if (url === 'about:blank' && virtualUrlRe && virtualUrlRe.test(title)) {
     browser.tabs.update(id, { url: resolveVirtualUrl(title) });
   } else if (isUserJS && isFile && getOption('helpForLocalFile') && (

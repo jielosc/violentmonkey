@@ -3,15 +3,14 @@ import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const ios = process.argv.includes('--ios');
 const force = process.argv.includes('--force');
-const source = resolve(ios ? 'dist-safari-ios' : 'dist-safari');
-const projectLocation = resolve(ios ? 'build/safari-ios' : 'build/safari-macos');
+const source = resolve('dist-safari');
+const projectLocation = resolve('build/safari-macos');
 const appName = process.env.SAFARI_APP_NAME || 'Violentmonkey';
 const bundleId = process.env.SAFARI_BUNDLE_IDENTIFIER || 'org.violentmonkey.Violentmonkey';
 
 if (!existsSync(`${source}/manifest.json`)) {
-  console.error(`Missing ${source}/manifest.json. Run pnpm build:safari${ios ? ':ios' : ''} first.`);
+  console.error(`Missing ${source}/manifest.json. Run pnpm build:safari first.`);
   process.exitCode = 1;
 } else if (existsSync(projectLocation) && !force) {
   console.error(`${projectLocation} already exists. Move it aside or rerun with --force.`);
@@ -30,7 +29,7 @@ if (!existsSync(`${source}/manifest.json`)) {
       '--app-name', appName,
       '--bundle-identifier', bundleId,
       '--swift',
-      ios ? '--ios-only' : '--macos-only',
+      '--macos-only',
       '--copy-resources',
       '--no-open',
       '--no-prompt',
