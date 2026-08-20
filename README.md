@@ -7,6 +7,23 @@
 Violentmonkey provides userscripts support for browsers.
 It works on browsers with [WebExtensions](https://developer.mozilla.org/en-US/Add-ons/WebExtensions) support.
 
+## Safari for macOS (ready-to-install preview)
+
+This fork includes a packaged Safari Web Extension for macOS, so you can try Violentmonkey in
+Safari without building or signing an Xcode project yourself.
+
+**[Download Violentmonkey Safari for macOS 2.48.0 Preview](https://github.com/jielosc/violentmonkey/releases/download/safari-v2.48.0-preview.1/Violentmonkey-Safari-macOS-2.48.0-preview.zip)**
+
+It supports macOS 11 or later and Safari 15.4 or later on both Apple silicon and Intel Macs.
+Unzip the download, move `Violentmonkey.app` to Applications, open it once, then enable
+Violentmonkey under **Safari > Settings > Extensions**. If macOS blocks the first launch, confirm
+it under **System Settings > Privacy & Security**.
+
+This is a community preview from this fork, not an official upstream release. The app is signed
+with an Apple Development certificate but is not notarized or distributed through the Mac App
+Store. Back up your userscripts before testing, and see [SAFARI.md](SAFARI.md) for compatibility
+details and known Safari limitations.
+
 More details can be found [here](https://violentmonkey.github.io/).
 
 Join our Discord server:
@@ -57,7 +74,8 @@ $ pnpm build:selfHosted
 
 ### Safari
 
-Dedicated Safari Web Extension builds are available for macOS:
+Use the [ready-to-install macOS preview](https://github.com/jielosc/violentmonkey/releases/tag/safari-v2.48.0-preview.1),
+or build the dedicated Safari Web Extension from source:
 
 ``` sh
 $ pnpm build:safari
