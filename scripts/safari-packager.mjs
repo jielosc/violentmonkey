@@ -8,7 +8,7 @@ const force = process.argv.includes('--force');
 const source = resolve(ios ? 'dist-safari-ios' : 'dist-safari');
 const projectLocation = resolve(ios ? 'build/safari-ios' : 'build/safari-macos');
 const appName = process.env.SAFARI_APP_NAME || 'Violentmonkey';
-const bundleId = process.env.SAFARI_BUNDLE_IDENTIFIER || 'org.violentmonkey.safari';
+const bundleId = process.env.SAFARI_BUNDLE_IDENTIFIER || 'org.violentmonkey.Violentmonkey';
 
 if (!existsSync(`${source}/manifest.json`)) {
   console.error(`Missing ${source}/manifest.json. Run pnpm build:safari${ios ? ':ios' : ''} first.`);

@@ -20,6 +20,7 @@ test('builds a Safari macOS manifest', () => {
   expect(manifest.background.persistent).toBe(true);
   expect(manifest.permissions).toContain('webRequest');
   expect(manifest.permissions).not.toContain('webRequestBlocking');
+  expect(manifest.commands._execute_browser_action).toBeUndefined();
   expect(manifest.browser_action.browser_style).toBeUndefined();
 });
 

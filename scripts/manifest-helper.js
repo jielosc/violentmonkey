@@ -42,6 +42,9 @@ function readManifest() {
   if (SAFARI) {
     delete data.minimum_chrome_version;
     delete data.browser_action.browser_style;
+    // Safari reports an empty/invalid command for Chromium's reserved action
+    // shortcut, while the toolbar action remains available normally.
+    delete data.commands._execute_browser_action;
     data.browser_specific_settings = {
       safari: {
         strict_min_version: SAFARI_MIN_VERSION,
