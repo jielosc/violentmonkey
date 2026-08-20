@@ -20,6 +20,7 @@ import { S_CACHE_PRE, S_CODE_PRE, S_REQUIRE_PRE, S_SCRIPT_PRE, S_VALUE_PRE } fro
 import { clearStorageCache } from './storage-cache';
 import { forEachTab, tabsOnRemoved } from './tabs';
 import { clearValueOpener } from './values';
+import { addWebRequestListener, canUseWebRequestExtraInfoSpec } from './web-request';
 
 export let isApplied;
 export let injectInto;
@@ -44,11 +45,11 @@ const API_CONFIG = {
   urls: [GLOB_ALL], // `*` scheme matches only http and https
   types: [kMainFrame, kSubFrame],
 };
-const API_EXTRA = __.SAFARI ? [] : [
+const API_EXTRA = canUseWebRequestExtraInfoSpec() ? [
   !__.MV3 && 'blocking', // used for xhrInject and to make Firefox fire the event before GetInjected
   kResponseHeaders,
   webRequest?.OnHeadersReceivedOptions.EXTRA_HEADERS,
-].filter(Boolean);
+].filter(Boolean) : [];
 const findCspHeader = h => h.name.toLowerCase() === 'content-security-policy';
 const CSP_RE = /(?:^|[;,])\s*(?:script-src(-elem)?|(d)efault-src)(\s+[^;,]+)/g;
 const NONCE_RE = /'nonce-([-+/=\w]+)'/;
@@ -96,7 +97,7 @@ const OPT_HANDLERS = {
       if (value === CONTENT) {
         API_HEADERS_RECEIVED.removeListener(onHeadersReceived);
       } else if (isApplied && IS_FIREFOX && !xhrInject) {
-        API_HEADERS_RECEIVED.addListener(onHeadersReceived, API_CONFIG, API_EXTRA);
+        addWebRequestListener(API_HEADERS_RECEIVED, onHeadersReceived, API_CONFIG, API_EXTRA);
       }
     }
     injectInto = value;
@@ -150,7 +151,7 @@ function toggleXhrInject(enable) {
   cache.destroy();
   API_XHR.removeListener(onHeadersReceived);
   if (enable) {
-    API_XHR.addListener(onHeadersReceived, API_CONFIG, __.MV3 ? undefined : API_EXTRA);
+    addWebRequestListener(API_XHR, onHeadersReceived, API_CONFIG, __.MV3 ? undefined : API_EXTRA);
   } else if (__.MV3) {
     revokeBlobRules();
   }
@@ -165,7 +166,11 @@ function togglePreinject(enable) {
   API_SEND_HEADERS[onOff](onSendHeaders, config);
   if (!isApplied /* remove the listener */
   || IS_FIREFOX && !xhrInject && injectInto !== CONTENT /* add 'nonce' detector */) {
-    API_HEADERS_RECEIVED[onOff](onHeadersReceived, config, config && API_EXTRA);
+    if (enable) {
+      addWebRequestListener(API_HEADERS_RECEIVED, onHeadersReceived, config, API_EXTRA);
+    } else {
+      API_HEADERS_RECEIVED.removeListener(onHeadersReceived);
+    }
   }
   tabsOnRemoved[onOff](onTabRemoved);
   browser.tabs.onReplaced?.[onOff](onTabReplaced);

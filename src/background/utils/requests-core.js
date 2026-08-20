@@ -1,6 +1,7 @@
 import { buffer2string, isEmpty, noop } from '@/common';
 import { forEachEntry } from '@/common/object';
 import { CHROME } from './ua';
+import { addWebRequestListener, canUseWebRequestExtraInfoSpec } from './web-request';
 
 let encoder;
 
@@ -128,11 +129,12 @@ function onBeforeSendHeaders({ [kRequestHeaders]: headers = [], requestId, tabId
 }
 
 export function toggleHeaderInjector(reqId, headers) {
-  if (!webRequest) return;
+  // Safari gets response headers from XMLHttpRequest and can't inject restricted request headers.
+  if (!webRequest || !canUseWebRequestExtraInfoSpec()) return;
   if (headers) {
     if (isEmpty(headersToInject)) {
       API_EVENTS::forEachEntry(([name, [listener, ...options]]) => {
-        webRequest[name].addListener(listener, API_FILTER, options);
+        addWebRequestListener(webRequest[name], listener, API_FILTER, options);
       });
     }
     // Adding even if empty so that the toggle-off `if` runs just once even when called many times

@@ -20,7 +20,7 @@ addPublicCommands({
     [kZombieUrl]: zombieUrl,
     [kZombieTimeout]: zombieTimeout,
   }, src) {
-    if (!notificationsApi) return '';
+    if (!notificationsApi?.create) return '';
     if (tag) clearZombieTimer(notifications[tag]);
     const notificationId = await notificationsApi.create(tag, {
       type: 'basic',
@@ -52,9 +52,9 @@ addPublicCommands({
   },
 });
 
-notificationsApi?.onClicked.addListener((id) => notifyOpener(id, true));
+notificationsApi?.onClicked?.addListener?.((id) => notifyOpener(id, true));
 
-notificationsApi?.onClosed.addListener((id) => notifyOpener(id, false));
+notificationsApi?.onClosed?.addListener?.((id) => notifyOpener(id, false));
 
 async function notifyOpener(id, isClick) {
   if (init) await sessionData;
@@ -109,5 +109,5 @@ export function removeNotification(nid) {
   if (!notifications[nid]) return;
   delete notifications[nid];
   if (__.MV3) flushSession(kNotifications, notifications);
-  return notificationsApi?.clear(nid);
+  return notificationsApi?.clear?.(nid);
 }

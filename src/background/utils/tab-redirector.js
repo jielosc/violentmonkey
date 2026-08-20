@@ -9,6 +9,7 @@ import { matchUserScript, parseMeta } from './script';
 import { fileSchemeRequestable, getTabUrl, NEWTAB_URL_RE, tabsOnUpdated } from './tabs';
 import { FIREFOX } from './ua';
 import { request } from './url';
+import { addWebRequestListener } from './web-request';
 
 addPublicCommands({
   async CheckInstallerTab(tabId, src) {
@@ -120,7 +121,8 @@ tabsOnUpdated.addListener(async (tabId, { url }, tab) => {
   }
 }, !__.MV3 && FIREFOX && { properties: [FIREFOX >= 88 ? 'url' : 'status'] });
 
-browser.webRequest?.onBeforeRequest.addListener((req) => {
+const beforeRequest = browser.webRequest?.onBeforeRequest;
+const beforeRequestListener = (req) => {
   const { method, tabId, url } = req;
   if (method !== 'GET') {
     return;
@@ -140,7 +142,8 @@ browser.webRequest?.onBeforeRequest.addListener((req) => {
       ? { cancel: true } // for sites with strict CSP in FF
       : { redirectUrl: 'javascript:void 0' }; // eslint-disable-line no-script-url
   }
-}, {
+};
+const beforeRequestFilter = {
   urls: [
     // 1. *:// comprises only http/https
     // 2. the API ignores #hash part
@@ -152,4 +155,8 @@ browser.webRequest?.onBeforeRequest.addListener((req) => {
     !__.MV3 && `${extensionRoot}*.user.js`,
   ].filter(Boolean),
   types: [kMainFrame],
-}, __.MV3 || __.SAFARI ? undefined : ['blocking']);
+};
+if (beforeRequest) {
+  addWebRequestListener(beforeRequest, beforeRequestListener, beforeRequestFilter,
+    __.MV3 || __.SAFARI ? undefined : ['blocking']);
+}
